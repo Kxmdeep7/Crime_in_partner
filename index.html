@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MISSION: PARTNER</title>
+    <title>TERMINAL: MISSION YOU</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
@@ -12,88 +12,117 @@
             background: #000; 
             display: flex; justify-content: center; align-items: center;
             font-family: 'Courier New', Courier, monospace;
-            color: #00ff41;
         }
 
-        /* Initial Scanner */
-        #scan-screen {
-            display: flex; flex-direction: column; align-items: center; 
-            cursor: pointer; transition: opacity 0.3s ease;
+        /* Matrix Canvas */
+        canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1; opacity: 0.25;
         }
 
-        .scanner-circle {
-            width: 120px; height: 120px;
-            border: 1px solid #00ff41; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            position: relative; margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
         }
 
-        .scan-line {
-            position: absolute; width: 100%; height: 2px;
-            background: #00ff41; box-shadow: 0 0 15px #00ff41;
-            animation: moveLine 1.5s ease-in-out infinite;
+        .glitch-text {
+            animation: glitch 1s infinite linear alternate-reverse;
+            text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9;
         }
 
-        @keyframes moveLine { 0%, 100% { top: 20%; } 50% { top: 80%; } }
+        /* Start Screen */
+        #start-screen {
+            position: relative; z-index: 10;
+            text-align: center; cursor: pointer;
+        }
 
-        /* Smooth Content Reveal */
+        .start-btn {
+            padding: 20px 40px; border: 2px solid #00ff41;
+            color: #00ff41; font-size: 18px; font-weight: bold;
+            letter-spacing: 5px; text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 4px; transition: 0.3s;
+        }
+
+        /* Mission Panel */
         #mission-content {
-            display: none; opacity: 0;
+            display: none; position: relative; z-index: 10;
             flex-direction: column; align-items: center;
-            transition: opacity 0.5s ease-in;
+            width: 90%; max-width: 360px;
         }
 
-        .detective { font-size: 70px; margin-bottom: 20px; }
+        .detective { font-size: 65px; margin-bottom: 20px; filter: drop-shadow(0 0 15px #00ff41); }
 
-        .terminal-box { 
-            background: rgba(0, 255, 65, 0.05); border: 1px solid #00ff41;
-            padding: 25px; border-radius: 4px; width: 320px;
-            text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
+        .terminal-text {
+            color: #00ff41; font-size: 19px; line-height: 1.6;
+            text-align: center; margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 25px; border: 1px solid #00ff41;
+            box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.2);
         }
+
+        /* Typing Effect */
+        .typing {
+            overflow: hidden; white-space: nowrap; border-right: .15em solid #00ff41;
+            margin: 0 auto; letter-spacing: .10em;
+            animation: typing 2.5s steps(30, end), blink-caret .5s step-end infinite;
+        }
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #00ff41 } }
 
         /* Buttons */
-        .btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
-        button { 
-            padding: 10px 25px; border: 1px solid #00ff41; background: transparent; 
-            color: #00ff41; font-family: inherit; font-size: 14px; cursor: pointer;
-            transition: all 0.2s;
+        .btn-group { display: flex; justify-content: center; gap: 20px; }
+        
+        .action-btn {
+            padding: 12px 35px; border: 1px solid #00ff41;
+            background: rgba(0, 255, 65, 0.1); color: #00ff41;
+            font-family: inherit; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
         }
-        #yes-btn:active { background: #00ff41; color: #000; }
-        #no-btn { position: relative; transition: transform 0.1s linear; }
 
-        /* Success Screen */
+        #no-btn { position: relative; transition: 0.05s linear; }
+
+        /* Success screen */
         #success-screen {
-            display: none; position: fixed; inset: 0; background: #000;
-            z-index: 1000; justify-content: center; align-items: center;
-            flex-direction: column; text-align: center; padding: 20px;
+            display: none; position: fixed; inset: 0;
+            background: radial-gradient(circle, #1a0000 0%, #000 100%);
+            z-index: 100; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 25px;
+            animation: pulse-bg 2s infinite;
         }
+        @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
 
-        .punjabi-msg { 
-            font-size: 20px; color: #fff; line-height: 1.6; 
-            margin-bottom: 30px; letter-spacing: 1px;
+        .punjabi-msg {
+            font-size: 24px; color: #fff; line-height: 1.8;
+            margin-bottom: 35px; text-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
     </style>
 </head>
 <body>
 
-    <div id="scan-screen" onclick="unlockMission()">
-        <div class="scanner-circle">
-            <div class="scan-line"></div>
-            <span style="font-size: 40px;">🕵️</span>
-        </div>
-        <p style="letter-spacing: 3px; font-size: 12px;">HOLD TO AUTHORIZE</p>
+    <canvas id="matrix"></canvas>
+
+    <div id="start-screen" onclick="initMission()">
+        <div class="start-btn glitch-text">DECRYPT MESSAGE</div>
+        <p style="color: #00ff41; margin-top: 15px; font-size: 11px; letter-spacing: 3px; opacity: 0.6;">ENCRYPTED LINE: 77-09</p>
     </div>
 
     <div id="mission-content">
-        <div class="detective">🕵️</div>
-        <div class="terminal-box">
-            <p style="font-size: 10px; margin-bottom: 15px; opacity: 0.6;">IDENTIFIED: CRIME PARTNER</p>
-            <p style="font-size: 18px;">Will you be my crime 🫆 in partner 🕴️🕵️?</p>
-            <div class="btn-group">
-                <button id="yes-btn" onclick="finishMission()">YES</button>
-                <button id="no-btn" onmouseover="dodge()" onclick="dodge()">NO</button>
-            </div>
+        <div class="detective glitch-text">🕵️</div>
+        <div class="terminal-text">
+            <p class="typing">Will you be my crime partner?</p>
+            <p style="font-size: 10px; margin-top: 10px; opacity: 0.5;">STATUS: WAITING FOR RESPONSE...</p>
+        </div>
+        <div class="btn-group">
+            <button class="action-btn" onclick="celebrate()">YES</button>
+            <button class="action-btn" id="no-btn" onmouseover="dodge()" onclick="dodge()">NO</button>
         </div>
     </div>
 
@@ -102,43 +131,52 @@
             Apna khayal rakhna tuc,<br>
             koi jee rhea thnu dekh dekh ke!!
         </div>
-        <div style="color: #00ff41; letter-spacing: 5px; font-weight: bold;">CASE CLOSED ❤️</div>
+        <div class="glitch-text" style="color: #00ff41; letter-spacing: 8px; font-weight: bold; border: 1px solid #00ff41; padding: 15px;">PARTNERSHIP SECURED ❤️</div>
     </div>
 
     <script>
-        function unlockMission() {
-            if (navigator.vibrate) navigator.vibrate(50);
-            
-            // Fade out scanner, fade in mission instantly
-            const scan = document.getElementById('scan-screen');
-            const content = document.getElementById('mission-content');
-            
-            scan.style.opacity = '0';
-            setTimeout(() => {
-                scan.style.display = 'none';
-                content.style.display = 'flex';
-                // Trigger smooth fade in
-                setTimeout(() => { content.style.opacity = '1'; }, 50);
-            }, 300);
+        // Matrix Logic
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const letters = "10"; // Faster, cleaner binary matrix
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00ff41";
+            ctx.font = fontSize + "px monospace";
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 30);
+
+        function initMission() {
+            if (navigator.vibrate) navigator.vibrate(100);
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('mission-content').style.display = 'flex';
         }
 
         function dodge() {
             const btn = document.getElementById('no-btn');
-            // Move it to a random spot within the safe area of the screen
             const maxX = window.innerWidth - btn.offsetWidth;
             const maxY = window.innerHeight - btn.offsetHeight;
-            
-            const newX = Math.random() * maxX;
-            const newY = Math.random() * maxY;
-            
             btn.style.position = 'fixed';
-            btn.style.left = newX + 'px';
-            btn.style.top = newY + 'px';
+            btn.style.left = Math.random() * maxX + 'px';
+            btn.style.top = Math.random() * maxY + 'px';
         }
 
-        function finishMission() {
+        function celebrate() {
             document.getElementById('success-screen').style.display = 'flex';
-            if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
     </script>
 </body>
