@@ -15,7 +15,6 @@
 
         canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
-        /* Start Screen */
         #start-screen {
             position: fixed; inset: 0; z-index: 1000;
             background: #000; display: flex; flex-direction: column;
@@ -28,7 +27,6 @@
             letter-spacing: 2px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
         }
 
-        /* Interaction Box */
         .terminal-box {
             position: relative; z-index: 10; background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px); border: 1px solid rgba(0, 255, 65, 0.3);
@@ -37,7 +35,6 @@
 
         .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 30px; }
 
-        /* Random Punjabi Message */
         #dodge-msg {
             position: fixed; top: 10%; width: 100%; text-align: center;
             color: #ffb7c5; font-size: 20px; font-weight: bold; z-index: 2000;
@@ -48,10 +45,9 @@
         
         #no-btn { 
             padding: 15px 35px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #555; 
-            border-radius: 50px; position: relative; z-index: 500;
+            border-radius: 50px; position: relative; z-index: 500; transition: 0.1s ease;
         }
 
-        /* Floating Promises */
         #success-screen {
             display: none; position: fixed; inset: 0; z-index: 3000;
             background: #000; overflow: hidden;
@@ -67,7 +63,6 @@
             position: absolute; width: 100%; top: 50%; left: 50%; transform: translate(-50%, -50%);
             color: #fff; font-size: 24px; font-weight: bold; text-align: center;
             opacity: 0; transition: 2.5s; z-index: 4000; padding: 20px;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
         }
     </style>
 </head>
@@ -96,7 +91,6 @@
     </div>
 
     <script>
-        // Background Matrix
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -113,7 +107,6 @@
         }
         setInterval(draw, 50);
 
-        // 20 Random Punjabi Dodge Responses
         const responses = [
             "Haye Oye! 😲", "Nai Nai... 😒", "Deep ne rus jana! 😤", "Yes dab do hun! 🙏", 
             "Ena nakhra? 😂", "Sabar kro! 🕒", "Koshish krlo, hath ni ana! 🏃‍♀️", "Aaho! Badi teji? 😏",
@@ -129,8 +122,13 @@
             if(e) e.preventDefault();
             msgDisplay.innerHTML = responses[Math.floor(Math.random() * responses.length)];
             
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 60) + 30;
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 60) + 30;
+            // MATH FIX: Restricted boundaries so it NEVER leaves the viewport
+            const padding = 80; 
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+            
+            const x = Math.max(padding/2, Math.random() * maxX);
+            const y = Math.max(padding/2, Math.random() * maxY);
             
             noBtn.style.position = 'fixed';
             noBtn.style.left = x + 'px';
@@ -142,7 +140,6 @@
 
         function init() { document.getElementById('start-screen').style.display = 'none'; }
 
-        // Bouncing/Floating Promises Logic
         const promises = [
             "I will always respect you. 💯",
             "I will never ignore you. ❤️",
@@ -151,6 +148,7 @@
 
         function celebrate() {
             document.getElementById('success-screen').style.display = 'block';
+            document.getElementById('dodge-msg').style.display = 'none';
             const screen = document.getElementById('success-screen');
 
             promises.forEach((text) => {
@@ -159,17 +157,17 @@
                 p.innerHTML = text;
                 screen.appendChild(p);
 
-                let posX = Math.random() * (window.innerWidth - 200);
+                let posX = Math.random() * (window.innerWidth - 220);
                 let posY = Math.random() * (window.innerHeight - 100);
-                let velX = (Math.random() - 0.5) * 3;
-                let velY = (Math.random() - 0.5) * 3;
+                let velX = (Math.random() - 0.5) * 4;
+                let velY = (Math.random() - 0.5) * 4;
 
                 function animate() {
                     posX += velX;
                     posY += velY;
 
-                    if (posX <= 0 || posX >= window.innerWidth - p.offsetWidth) velX *= -1;
-                    if (posY <= 0 || posY >= window.innerHeight - p.offsetHeight) velY *= -1;
+                    if (posX <= 10 || posX >= window.innerWidth - p.offsetWidth - 10) velX *= -1;
+                    if (posY <= 10 || posY >= window.innerHeight - p.offsetHeight - 10) velY *= -1;
 
                     p.style.left = posX + 'px';
                     p.style.top = posY + 'px';
