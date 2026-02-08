@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MISSION: PARTNER</title>
+    <title>MISSION: PROPOSE DAY</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             height: 100%; width: 100%; overflow: hidden; 
-            background: #05070a; display: flex; justify-content: center; align-items: center;
-            font-family: sans-serif;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #05070a 100%); 
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
-        /* Start Screen */
         #start-screen {
             position: fixed; inset: 0; z-index: 1000;
             background: #000; display: flex; flex-direction: column;
@@ -24,40 +24,49 @@
         .access-btn {
             padding: 20px 40px; border: 2px solid #00ff41; color: #00ff41;
             background: transparent; border-radius: 50px; font-weight: bold; font-size: 18px;
+            box-shadow: 0 0 15px #00ff41;
         }
 
-        /* Main Box */
         .terminal-box {
-            position: relative; z-index: 10; background: rgba(20, 20, 20, 0.9);
-            border: 1px solid rgba(0, 255, 65, 0.3); padding: 40px 20px;
-            width: 90%; max-width: 400px; text-align: center; border-radius: 30px;
+            position: relative; z-index: 10; background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px); border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 40px 20px; width: 90%; max-width: 400px; text-align: center; border-radius: 30px;
         }
 
         .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 30px; }
 
-        /* No Message Popup */
         #dodge-msg {
-            position: fixed; top: 10%; width: 100%; text-align: center;
-            color: #ffb7c5; font-size: 18px; font-weight: bold; z-index: 2000;
+            position: fixed; top: 12%; width: 100%; text-align: center;
+            color: #ffb7c5; font-size: 20px; font-weight: bold; z-index: 2000;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
-        /* Buttons */
         .btn-group { display: flex; justify-content: center; gap: 20px; }
-        .yes-btn { padding: 15px 35px; background: #00ff41; border: none; border-radius: 50px; font-weight: bold; }
+        .yes-btn { padding: 15px 40px; background: #00ff41; border: none; border-radius: 50px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
         #no-btn { 
-            padding: 15px 35px; background: #333; color: #fff; border: 1px solid #555; 
-            border-radius: 50px; position: relative; z-index: 500;
+            padding: 15px 40px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #555; 
+            border-radius: 50px; position: relative; z-index: 500; transition: all 0.1s ease;
         }
 
         /* Success Screen */
         #success-screen {
             display: none; position: fixed; inset: 0; z-index: 3000;
-            background: #000; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            background: #000; overflow: hidden;
         }
 
-        .p-text { color: #fff; font-size: 18px; margin: 10px; opacity: 0; transition: 1s; }
-        .main-msg { color: #fff; font-size: 24px; font-weight: bold; margin-top: 30px; opacity: 0; transition: 2s; }
+        .floating-promise {
+            position: absolute; color: #00ff41; font-size: 18px; font-weight: bold;
+            background: rgba(0, 255, 65, 0.1); padding: 15px 25px; border-radius: 50px;
+            border: 1px solid #00ff41; white-space: nowrap; pointer-events: none;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .main-msg { 
+            position: absolute; width: 100%; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-size: 26px; font-weight: bold; text-align: center;
+            opacity: 0; transition: 2s; z-index: 4000; padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -66,7 +75,7 @@
     <div id="dodge-msg"></div>
 
     <div id="start-screen" onclick="init()">
-        <button class="access-btn">INITIALIZE MISSION</button>
+        <button class="access-btn">DECRYPT MISSION</button>
     </div>
 
     <div class="terminal-box" id="main-box">
@@ -78,9 +87,6 @@
     </div>
 
     <div id="success-screen">
-        <div class="p-text" id="p1">I will always respect you. 💯</div>
-        <div class="p-text" id="p2">I will never ignore you. ❤️</div>
-        <div class="p-text" id="p3">My Love for you increases day by day. 📈</div>
         <div class="main-msg" id="final">
             Apna khayal rakhna tuc,<br>
             koi jee rhea thnu dekh dekh ke!!
@@ -88,13 +94,14 @@
     </div>
 
     <script>
-        // Matrix
+        // Matrix Effect
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
         const drops = Array(Math.floor(canvas.width/20)).fill(1);
         function draw() {
-            ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "rgba(0,0,0,0.08)"; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = "#00ff41"; ctx.font = "15px monospace";
             drops.forEach((y, i) => {
                 ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
@@ -104,37 +111,23 @@
         }
         setInterval(draw, 50);
 
-        // Dodge Logic
+        // Random Punjabi No Messages
+        const punjabiMessages = [
+            "Haye Oye! 😲", "Nai Nai... 😒", "Deep ne rus jana 😤", "Yes dab do hun! 🙏", 
+            "Ena nakhra? 😂", "Sabar kro! 🕒", "Koshish krlo, hath ni ana! 🏃‍♀️", "Aaho! Badi teji? 😏",
+            "Maan v jao hun 🌹", "System hang ho jana! ⚠️", "Rab da vasta! 🙏", "Deep di gal ni manni? ☹️",
+            "Finger thak jani aa! ☝️", "Zid na kro! ✨", "Maadi gal aa! ❌", "Bas hun last warning! 🔥",
+            "Ek chance hor dinda m! 💁‍♂️", "Bhajde raho, No ni milna! 😂", "Deep rusi baitha! 😤", "Acha ji? 🕵️‍♂️"
+        ];
+
         const noBtn = document.getElementById('no-btn');
-        const msg = document.getElementById('dodge-msg');
+        const msgDisplay = document.getElementById('dodge-msg');
         let count = 0;
-        const punjabi = ["Haye Oye! 😲", "Nai Nai... 😒", "Deep ne rus jana 😤", "Yes dab do hun! 🙏", "Sabar kro! 😂"];
 
         function move(e) {
             if(e) e.preventDefault();
-            msg.innerHTML = punjabi[count % punjabi.length];
-            count++;
-
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 40) + 20;
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 40) + 20;
+            // Randomly select message
+            msgDisplay.innerHTML = punjabiMessages[Math.floor(Math.random() * punjabiMessages.length)];
             
-            noBtn.style.position = 'fixed';
-            noBtn.style.left = x + 'px';
-            noBtn.style.top = y + 'px';
-        }
-
-        noBtn.addEventListener('touchstart', move);
-        noBtn.addEventListener('mouseover', move);
-
-        function init() { document.getElementById('start-screen').style.display = 'none'; }
-
-        function celebrate() {
-            document.getElementById('success-screen').style.display = 'flex';
-            setTimeout(() => { document.getElementById('p1').style.opacity = '1'; }, 500);
-            setTimeout(() => { document.getElementById('p2').style.opacity = '1'; }, 1500);
-            setTimeout(() => { document.getElementById('p3').style.opacity = '1'; }, 2500);
-            setTimeout(() => { document.getElementById('final').style.opacity = '1'; }, 4500);
-        }
-    </script>
-</body>
-</html>
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 60) + 30
+            
