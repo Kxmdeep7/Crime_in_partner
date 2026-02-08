@@ -3,202 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERMINAL: MISSION YOU</title>
+    <title>TERMINAL: DECRYPT</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
             height: 100%; width: 100%; overflow: hidden; 
-            background: radial-gradient(circle at center, #1a0b2e 0%, #05070a 100%); 
+            background: #000; color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
             display: flex; justify-content: center; align-items: center;
-            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
-        canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
+        /* Matrix Background */
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.15; }
 
-        #start-screen {
-            position: fixed; inset: 0; z-index: 500;
-            background: #000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; cursor: pointer;
+        /* Main Terminal Box */
+        .terminal {
+            position: relative; z-index: 10; width: 90%; max-width: 400px;
+            background: rgba(10, 10, 10, 0.9); border: 1px solid #00ff41;
+            padding: 30px; border-radius: 15px; text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
         }
 
-        .access-btn {
-            padding: 20px 45px; border: 2px solid #00ff41;
-            color: #00ff41; font-size: 18px; font-weight: bold;
-            letter-spacing: 5px; background: rgba(0, 255, 65, 0.05);
-            border-radius: 50px; box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
-        }
+        .status-text { margin-bottom: 20px; font-size: 14px; letter-spacing: 2px; height: 40px; }
 
-        #mission-content { display: none; position: relative; z-index: 10; flex-direction: column; align-items: center; width: 90%; }
-        
-        .terminal-box {
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 255, 65, 0.2); padding: 45px 25px;
-            width: 100%; max-width: 400px; text-align: center; border-radius: 30px;
+        /* Progress Bar */
+        .progress-container { 
+            width: 100%; background: #111; border: 1px solid #00ff41; 
+            height: 10px; margin-bottom: 30px; display: none; 
         }
+        .progress-bar { width: 0%; height: 100%; background: #00ff41; transition: width 0.1s; }
 
-        .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 35px; }
-
-        #dodge-feedback {
-            position: fixed; top: 10%; width: 85%; text-align: center;
-            color: #ffb7c5; font-size: 19px; font-weight: bold;
-            z-index: 150; display: none; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 20px;
+        /* Buttons */
+        .cmd-btn {
+            background: transparent; color: #00ff41; border: 1px solid #00ff41;
+            padding: 15px 30px; cursor: pointer; font-size: 14px; font-weight: bold;
+            text-transform: uppercase; border-radius: 50px; transition: 0.3s;
         }
+        .cmd-btn:active { background: #00ff41; color: #000; }
 
-        .random-promise {
-            position: fixed; background: rgba(0, 255, 65, 0.1);
-            border: 1px solid #00ff41; color: #fff;
-            padding: 15px 20px; border-radius: 15px;
-            font-size: 14px; z-index: 1000; opacity: 0;
-            transition: opacity 0.5s ease; pointer-events: none;
-            max-width: 220px; backdrop-filter: blur(5px);
+        /* Promises & Final Message */
+        #final-content {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: #000; flex-direction: column; justify-content: center;
+            align-items: center; padding: 30px; text-align: center;
         }
-
-        #success-screen {
-            display: none; position: fixed; inset: 0; background: #000; z-index: 2000;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;
-        }
-
-        .punjabi-heavy {
-            font-size: 26px; color: #fff; line-height: 1.6; font-weight: bold;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
-        }
-
-        .action-btn { padding: 15px 35px; border: none; background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; }
-        
-        #no-btn { 
-            background: rgba(255,255,255,0.1); color: #fff; 
-            border: 1px solid rgba(255,255,255,0.3); 
-            position: relative; /* Starts relative, JS will move it */
-            z-index: 600; 
-            transition: all 0.2s ease; 
-        }
+        .promise { color: #fff; font-size: 18px; margin-bottom: 15px; opacity: 0; transition: 1s; }
+        .punjabi-main { color: #fff; font-size: 24px; font-weight: bold; margin-top: 40px; opacity: 0; transition: 2s; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <canvas id="matrix"></canvas>
-    <div id="dodge-feedback"></div>
 
-    <div id="start-screen" onclick="initMission()">
-        <div style="font-size: 50px; margin-bottom: 20px;">🕵️‍♀️</div>
-        <button class="access-btn">INITIALIZE MISSION</button>
+    <div class="terminal" id="terminal-box">
+        <div id="display" class="status-text">MISSION: CRIME PARTNER<br>STATUS: ENCRYPTED</div>
+        <div class="progress-container" id="loader"><div class="progress-bar" id="bar"></div></div>
+        <button class="cmd-btn" id="main-btn" onclick="nextStep()">Initialize Decryption</button>
     </div>
 
-    <div id="mission-content">
-        <div class="terminal-box">
-            <div class="typing-text">Will you be my crime partner? 🕵️‍♂️</div>
-            <div id="btn-container" style="display: flex; justify-content: center; gap: 20px;">
-                <button class="action-btn" onclick="celebrate()">YES</button>
-                <button class="action-btn" id="no-btn">NO</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="promise-container"></div>
-
-    <div id="success-screen">
-        <div class="punjabi-heavy">
+    <div id="final-content">
+        <div class="promise" id="p1">I will always respect you. 💯</div>
+        <div class="promise" id="p2">I will never ignore you. ❤️</div>
+        <div class="promise" id="p3">My Love for you increases day by day. 📈</div>
+        <div class="punjabi-main" id="p-final">
             Apna khayal rakhna tuc,<br>
             koi jee rhea thnu dekh dekh ke!!
         </div>
-        <div style="color: #00ff41; margin-top: 30px; letter-spacing: 5px; font-size: 12px; border: 1px solid #00ff41; padding: 10px 20px; border-radius: 50px;">CASE CLOSED ❤️</div>
     </div>
 
     <script>
+        // Matrix Effect
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resize; resize();
-        const letters = "01";
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const columns = canvas.width / 20;
         const drops = Array(Math.floor(columns)).fill(1);
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.08)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#00ff41"; ctx.font = fontSize + "px monospace";
-            for (let i = 0; i < drops.length; i++) {
-                const text = letters.charAt(Math.floor(Math.random() * letters.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        function draw() {
+            ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "#00ff41"; ctx.font = "15px monospace";
+            drops.forEach((y, i) => {
+                ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
+                if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
+            });
+        }
+        setInterval(draw, 50);
+
+        // Story Logic
+        let step = 0;
+        const messages = [
+            "DECRYPTING... ERROR!",
+            "Deep system access required...",
+            "Haye Oye! Eni mehnat? 😲",
+            "Sabar kro, unlock ho rha... 😒",
+            "Nai Nai, thoda ta Khyaal kro! 🥺",
+            "Hale v click kr rhey ho? 😂",
+            "Dekhlo pher, Deep ne rusi jana 😤",
+            "Rab da vasta, dhyan nal dekho 🙏",
+            "FINAL ATTEMPT: ACCESSING TRUTH..."
+        ];
+
+        function nextStep() {
+            const btn = document.getElementById('main-btn');
+            const display = document.getElementById('display');
+            const loader = document.getElementById('loader');
+            const bar = document.getElementById('bar');
+
+            if (step < messages.length) {
+                display.innerHTML = messages[step];
+                loader.style.display = "block";
+                
+                // Reset bar
+                bar.style.transition = "none";
+                bar.style.width = "0%";
+                
+                setTimeout(() => {
+                    bar.style.transition = "width 0.8s";
+                    bar.style.width = "100%";
+                }, 10);
+
+                btn.innerHTML = "Retry Decryption";
+                step++;
+            } else {
+                showFinal();
             }
         }
-        setInterval(drawMatrix, 35);
 
-        let dodgeCount = 0;
-        const noBtn = document.getElementById('no-btn');
-        const punjabiMessages = [
-            "Haye Oye NO! 😲", "Yr eve thodi hunda... 😒", "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
-            "Yrr eda ni krdea, Ik bar yes te click kro! ❤️", "Hale v No? 😂", "Finger thak jani aa☝️",
-            "Deep ne rusi jana pher 😤", "No hath ni ana 🏃‍♂️", "System hang ho jana! ⚠️", "Maan v jao hun 🌹"
-        ];
-
-        function dodge(e) {
-            if (e) e.preventDefault();
+        function showFinal() {
+            document.getElementById('terminal-box').style.display = "none";
+            document.getElementById('final-content').style.display = "flex";
             
-            // Show message
-            const feedback = document.getElementById('dodge-feedback');
-            feedback.innerHTML = punjabiMessages[dodgeCount % punjabiMessages.length];
-            feedback.style.display = 'block';
-            setTimeout(() => { feedback.style.display = 'none'; }, 1500);
-            
-            dodgeCount++;
-
-            // FORCE button to move within window boundaries
-            const btnWidth = noBtn.offsetWidth;
-            const btnHeight = noBtn.offsetHeight;
-            const padding = 50;
-
-            const maxX = window.innerWidth - btnWidth - padding;
-            const maxY = window.innerHeight - btnHeight - padding;
-
-            // Generate absolute coordinates based on the screen, not the container
-            const randomX = Math.floor(Math.random() * maxX) + (padding / 2);
-            const randomY = Math.floor(Math.random() * maxY) + (padding / 2);
-
-            noBtn.style.position = 'fixed';
-            noBtn.style.left = randomX + 'px';
-            noBtn.style.top = randomY + 'px';
-        }
-
-        // Attach listeners directly to the element
-        noBtn.addEventListener('touchstart', dodge, {passive: false});
-        noBtn.addEventListener('mouseover', dodge);
-        noBtn.addEventListener('click', (e) => e.preventDefault());
-
-        function initMission() {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('mission-content').style.display = 'flex';
-        }
-
-        const promises = [
-            "I will always respect you. 💯",
-            "I will never ignore you. ❤️",
-            "My Love for you increases day by day. 📈"
-        ];
-
-        function celebrate() {
-            document.getElementById('mission-content').style.display = 'none';
-            document.getElementById('dodge-feedback').style.display = 'none';
-            promises.forEach((text, index) => {
-                setTimeout(() => {
-                    const p = document.createElement('div');
-                    p.className = 'random-promise';
-                    p.innerHTML = text;
-                    const x = Math.max(20, Math.random() * (window.innerWidth - 220));
-                    const y = Math.max(20, Math.random() * (window.innerHeight - 100));
-                    p.style.left = x + 'px';
-                    p.style.top = y + 'px';
-                    document.getElementById('promise-container').appendChild(p);
-                    setTimeout(() => p.style.opacity = '1', 50);
-                }, index * 1000);
-            });
-            setTimeout(() => {
-                document.getElementById('promise-container').style.display = 'none';
-                document.getElementById('matrix').style.display = 'none';
-                document.getElementById('success-screen').style.display = 'flex';
-            }, 4500);
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            setTimeout(() => { document.getElementById('p1').style.opacity = "1"; }, 1000);
+            setTimeout(() => { document.getElementById('p2').style.opacity = "1"; }, 2000);
+            setTimeout(() => { document.getElementById('p3').style.opacity = "1"; }, 3000);
+            setTimeout(() => { document.getElementById('p-final').style.opacity = "1"; }, 5000);
         }
     </script>
 </body>
