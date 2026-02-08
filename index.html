@@ -29,6 +29,7 @@
         }
 
         #mission-content { display: none; position: relative; z-index: 10; flex-direction: column; align-items: center; width: 90%; }
+        
         .terminal-box {
             background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px);
             border: 1px solid rgba(0, 255, 65, 0.2); padding: 45px 25px;
@@ -63,10 +64,13 @@
         }
 
         .action-btn { padding: 15px 35px; border: none; background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; }
+        
         #no-btn { 
             background: rgba(255,255,255,0.1); color: #fff; 
-            border: 1px solid rgba(255,255,255,0.3); position: relative; 
-            z-index: 50; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            position: relative; /* Starts relative, JS will move it */
+            z-index: 600; 
+            transition: all 0.2s ease; 
         }
     </style>
 </head>
@@ -83,7 +87,7 @@
     <div id="mission-content">
         <div class="terminal-box">
             <div class="typing-text">Will you be my crime partner? 🕵️‍♂️</div>
-            <div id="btn-container" style="display: flex; justify-content: center; gap: 20px; position: relative; height: 60px; width: 100%;">
+            <div id="btn-container" style="display: flex; justify-content: center; gap: 20px;">
                 <button class="action-btn" onclick="celebrate()">YES</button>
                 <button class="action-btn" id="no-btn">NO</button>
             </div>
@@ -101,7 +105,6 @@
     </div>
 
     <script>
-        // Matrix Logic
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -122,9 +125,7 @@
         }
         setInterval(drawMatrix, 35);
 
-        // Dodge and Reset Logic
         let dodgeCount = 0;
-        let resetTimer;
         const noBtn = document.getElementById('no-btn');
         const punjabiMessages = [
             "Haye Oye NO! 😲", "Yr eve thodi hunda... 😒", "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
@@ -134,36 +135,36 @@
 
         function dodge(e) {
             if (e) e.preventDefault();
-            clearTimeout(resetTimer); // Stop it from resetting while she is active
             
+            // Show message
             const feedback = document.getElementById('dodge-feedback');
             feedback.innerHTML = punjabiMessages[dodgeCount % punjabiMessages.length];
             feedback.style.display = 'block';
             setTimeout(() => { feedback.style.display = 'none'; }, 1500);
             
             dodgeCount++;
-            const padding = 60;
-            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+            // FORCE button to move within window boundaries
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+            const padding = 50;
+
+            const maxX = window.innerWidth - btnWidth - padding;
+            const maxY = window.innerHeight - btnHeight - padding;
+
+            // Generate absolute coordinates based on the screen, not the container
             const randomX = Math.floor(Math.random() * maxX) + (padding / 2);
             const randomY = Math.floor(Math.random() * maxY) + (padding / 2);
-            
+
             noBtn.style.position = 'fixed';
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
-
-            // Start the 5-second timer to return the button
-            resetTimer = setTimeout(resetButton, 5000);
         }
 
-        function resetButton() {
-            noBtn.style.position = 'relative';
-            noBtn.style.left = '0';
-            noBtn.style.top = '0';
-        }
-
-        noBtn.addEventListener('touchstart', dodge);
+        // Attach listeners directly to the element
+        noBtn.addEventListener('touchstart', dodge, {passive: false});
         noBtn.addEventListener('mouseover', dodge);
+        noBtn.addEventListener('click', (e) => e.preventDefault());
 
         function initMission() {
             document.getElementById('start-screen').style.display = 'none';
