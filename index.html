@@ -3,81 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERMINAL: DECRYPT</title>
+    <title>MISSION: PARTNER</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             height: 100%; width: 100%; overflow: hidden; 
-            background: #000; color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; justify-content: center; align-items: center;
+            background: #05070a; display: flex; justify-content: center; align-items: center;
+            font-family: sans-serif;
         }
 
-        /* Matrix Background */
-        canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.15; }
+        canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
-        /* Main Terminal Box */
-        .terminal {
-            position: relative; z-index: 10; width: 90%; max-width: 400px;
-            background: rgba(10, 10, 10, 0.9); border: 1px solid #00ff41;
-            padding: 30px; border-radius: 15px; text-align: center;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        /* Start Screen */
+        #start-screen {
+            position: fixed; inset: 0; z-index: 1000;
+            background: #000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; cursor: pointer;
         }
 
-        .status-text { margin-bottom: 20px; font-size: 14px; letter-spacing: 2px; height: 40px; }
-
-        /* Progress Bar */
-        .progress-container { 
-            width: 100%; background: #111; border: 1px solid #00ff41; 
-            height: 10px; margin-bottom: 30px; display: none; 
+        .access-btn {
+            padding: 20px 40px; border: 2px solid #00ff41; color: #00ff41;
+            background: transparent; border-radius: 50px; font-weight: bold; font-size: 18px;
         }
-        .progress-bar { width: 0%; height: 100%; background: #00ff41; transition: width 0.1s; }
+
+        /* Main Box */
+        .terminal-box {
+            position: relative; z-index: 10; background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(0, 255, 65, 0.3); padding: 40px 20px;
+            width: 90%; max-width: 400px; text-align: center; border-radius: 30px;
+        }
+
+        .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 30px; }
+
+        /* No Message Popup */
+        #dodge-msg {
+            position: fixed; top: 10%; width: 100%; text-align: center;
+            color: #ffb7c5; font-size: 18px; font-weight: bold; z-index: 2000;
+        }
 
         /* Buttons */
-        .cmd-btn {
-            background: transparent; color: #00ff41; border: 1px solid #00ff41;
-            padding: 15px 30px; cursor: pointer; font-size: 14px; font-weight: bold;
-            text-transform: uppercase; border-radius: 50px; transition: 0.3s;
+        .btn-group { display: flex; justify-content: center; gap: 20px; }
+        .yes-btn { padding: 15px 35px; background: #00ff41; border: none; border-radius: 50px; font-weight: bold; }
+        
+        #no-btn { 
+            padding: 15px 35px; background: #333; color: #fff; border: 1px solid #555; 
+            border-radius: 50px; position: relative; z-index: 500;
         }
-        .cmd-btn:active { background: #00ff41; color: #000; }
 
-        /* Promises & Final Message */
-        #final-content {
-            display: none; position: fixed; inset: 0; z-index: 100;
-            background: #000; flex-direction: column; justify-content: center;
-            align-items: center; padding: 30px; text-align: center;
+        /* Success Screen */
+        #success-screen {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: #000; flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
-        .promise { color: #fff; font-size: 18px; margin-bottom: 15px; opacity: 0; transition: 1s; }
-        .punjabi-main { color: #fff; font-size: 24px; font-weight: bold; margin-top: 40px; opacity: 0; transition: 2s; line-height: 1.5; }
+
+        .p-text { color: #fff; font-size: 18px; margin: 10px; opacity: 0; transition: 1s; }
+        .main-msg { color: #fff; font-size: 24px; font-weight: bold; margin-top: 30px; opacity: 0; transition: 2s; }
     </style>
 </head>
 <body>
 
     <canvas id="matrix"></canvas>
+    <div id="dodge-msg"></div>
 
-    <div class="terminal" id="terminal-box">
-        <div id="display" class="status-text">MISSION: CRIME PARTNER<br>STATUS: ENCRYPTED</div>
-        <div class="progress-container" id="loader"><div class="progress-bar" id="bar"></div></div>
-        <button class="cmd-btn" id="main-btn" onclick="nextStep()">Initialize Decryption</button>
+    <div id="start-screen" onclick="init()">
+        <button class="access-btn">INITIALIZE MISSION</button>
     </div>
 
-    <div id="final-content">
-        <div class="promise" id="p1">I will always respect you. 💯</div>
-        <div class="promise" id="p2">I will never ignore you. ❤️</div>
-        <div class="promise" id="p3">My Love for you increases day by day. 📈</div>
-        <div class="punjabi-main" id="p-final">
+    <div class="terminal-box" id="main-box">
+        <div class="typing-text">Will you be my crime partner? 🕵️‍♂️</div>
+        <div class="btn-group">
+            <button class="yes-btn" onclick="celebrate()">YES</button>
+            <button id="no-btn">NO</button>
+        </div>
+    </div>
+
+    <div id="success-screen">
+        <div class="p-text" id="p1">I will always respect you. 💯</div>
+        <div class="p-text" id="p2">I will never ignore you. ❤️</div>
+        <div class="p-text" id="p3">My Love for you increases day by day. 📈</div>
+        <div class="main-msg" id="final">
             Apna khayal rakhna tuc,<br>
             koi jee rhea thnu dekh dekh ke!!
         </div>
     </div>
 
     <script>
-        // Matrix Effect
+        // Matrix
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const columns = canvas.width / 20;
-        const drops = Array(Math.floor(columns)).fill(1);
+        const drops = Array(Math.floor(canvas.width/20)).fill(1);
         function draw() {
             ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = "#00ff41"; ctx.font = "15px monospace";
@@ -89,54 +104,36 @@
         }
         setInterval(draw, 50);
 
-        // Story Logic
-        let step = 0;
-        const messages = [
-            "DECRYPTING... ERROR!",
-            "Deep system access required...",
-            "Haye Oye! Eni mehnat? 😲",
-            "Sabar kro, unlock ho rha... 😒",
-            "Nai Nai, thoda ta Khyaal kro! 🥺",
-            "Hale v click kr rhey ho? 😂",
-            "Dekhlo pher, Deep ne rusi jana 😤",
-            "Rab da vasta, dhyan nal dekho 🙏",
-            "FINAL ATTEMPT: ACCESSING TRUTH..."
-        ];
+        // Dodge Logic
+        const noBtn = document.getElementById('no-btn');
+        const msg = document.getElementById('dodge-msg');
+        let count = 0;
+        const punjabi = ["Haye Oye! 😲", "Nai Nai... 😒", "Deep ne rus jana 😤", "Yes dab do hun! 🙏", "Sabar kro! 😂"];
 
-        function nextStep() {
-            const btn = document.getElementById('main-btn');
-            const display = document.getElementById('display');
-            const loader = document.getElementById('loader');
-            const bar = document.getElementById('bar');
+        function move(e) {
+            if(e) e.preventDefault();
+            msg.innerHTML = punjabi[count % punjabi.length];
+            count++;
 
-            if (step < messages.length) {
-                display.innerHTML = messages[step];
-                loader.style.display = "block";
-                
-                // Reset bar
-                bar.style.transition = "none";
-                bar.style.width = "0%";
-                
-                setTimeout(() => {
-                    bar.style.transition = "width 0.8s";
-                    bar.style.width = "100%";
-                }, 10);
-
-                btn.innerHTML = "Retry Decryption";
-                step++;
-            } else {
-                showFinal();
-            }
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 40) + 20;
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 40) + 20;
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
         }
 
-        function showFinal() {
-            document.getElementById('terminal-box').style.display = "none";
-            document.getElementById('final-content').style.display = "flex";
-            
-            setTimeout(() => { document.getElementById('p1').style.opacity = "1"; }, 1000);
-            setTimeout(() => { document.getElementById('p2').style.opacity = "1"; }, 2000);
-            setTimeout(() => { document.getElementById('p3').style.opacity = "1"; }, 3000);
-            setTimeout(() => { document.getElementById('p-final').style.opacity = "1"; }, 5000);
+        noBtn.addEventListener('touchstart', move);
+        noBtn.addEventListener('mouseover', move);
+
+        function init() { document.getElementById('start-screen').style.display = 'none'; }
+
+        function celebrate() {
+            document.getElementById('success-screen').style.display = 'flex';
+            setTimeout(() => { document.getElementById('p1').style.opacity = '1'; }, 500);
+            setTimeout(() => { document.getElementById('p2').style.opacity = '1'; }, 1500);
+            setTimeout(() => { document.getElementById('p3').style.opacity = '1'; }, 2500);
+            setTimeout(() => { document.getElementById('final').style.opacity = '1'; }, 4500);
         }
     </script>
 </body>
