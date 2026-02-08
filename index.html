@@ -15,6 +15,7 @@
 
         canvas { position: fixed; inset: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
+        /* Start Screen */
         #start-screen {
             position: fixed; inset: 0; z-index: 1000;
             background: #000; display: flex; flex-direction: column;
@@ -22,50 +23,51 @@
         }
 
         .access-btn {
-            padding: 20px 40px; border: 2px solid #00ff41; color: #00ff41;
-            background: transparent; border-radius: 50px; font-weight: bold; font-size: 18px;
-            box-shadow: 0 0 15px #00ff41;
+            padding: 18px 35px; border: 2px solid #00ff41; color: #00ff41;
+            background: transparent; border-radius: 50px; font-weight: bold; font-size: 16px;
+            letter-spacing: 2px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
         }
 
+        /* Interaction Box */
         .terminal-box {
             position: relative; z-index: 10; background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px); border: 1px solid rgba(0, 255, 65, 0.3);
-            padding: 40px 20px; width: 90%; max-width: 400px; text-align: center; border-radius: 30px;
+            backdrop-filter: blur(12px); border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 40px 20px; width: 90%; max-width: 380px; text-align: center; border-radius: 30px;
         }
 
         .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 30px; }
 
+        /* Random Punjabi Message */
         #dodge-msg {
-            position: fixed; top: 12%; width: 100%; text-align: center;
+            position: fixed; top: 10%; width: 100%; text-align: center;
             color: #ffb7c5; font-size: 20px; font-weight: bold; z-index: 2000;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
 
         .btn-group { display: flex; justify-content: center; gap: 20px; }
-        .yes-btn { padding: 15px 40px; background: #00ff41; border: none; border-radius: 50px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .yes-btn { padding: 15px 35px; background: #00ff41; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; }
         
         #no-btn { 
-            padding: 15px 40px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #555; 
-            border-radius: 50px; position: relative; z-index: 500; transition: all 0.1s ease;
+            padding: 15px 35px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #555; 
+            border-radius: 50px; position: relative; z-index: 500;
         }
 
-        /* Success Screen */
+        /* Floating Promises */
         #success-screen {
             display: none; position: fixed; inset: 0; z-index: 3000;
             background: #000; overflow: hidden;
         }
 
         .floating-promise {
-            position: absolute; color: #00ff41; font-size: 18px; font-weight: bold;
-            background: rgba(0, 255, 65, 0.1); padding: 15px 25px; border-radius: 50px;
-            border: 1px solid #00ff41; white-space: nowrap; pointer-events: none;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            position: absolute; color: #00ff41; font-size: 15px; font-weight: bold;
+            background: rgba(0, 255, 65, 0.08); padding: 12px 20px; border-radius: 50px;
+            border: 1px solid rgba(0, 255, 65, 0.5); white-space: nowrap; pointer-events: none;
         }
 
         .main-msg { 
             position: absolute; width: 100%; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-size: 26px; font-weight: bold; text-align: center;
-            opacity: 0; transition: 2s; z-index: 4000; padding: 20px;
+            color: #fff; font-size: 24px; font-weight: bold; text-align: center;
+            opacity: 0; transition: 2.5s; z-index: 4000; padding: 20px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
         }
     </style>
 </head>
@@ -94,7 +96,7 @@
     </div>
 
     <script>
-        // Matrix Effect
+        // Background Matrix
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -111,9 +113,9 @@
         }
         setInterval(draw, 50);
 
-        // Random Punjabi No Messages
-        const punjabiMessages = [
-            "Haye Oye! 😲", "Nai Nai... 😒", "Deep ne rus jana 😤", "Yes dab do hun! 🙏", 
+        // 20 Random Punjabi Dodge Responses
+        const responses = [
+            "Haye Oye! 😲", "Nai Nai... 😒", "Deep ne rus jana! 😤", "Yes dab do hun! 🙏", 
             "Ena nakhra? 😂", "Sabar kro! 🕒", "Koshish krlo, hath ni ana! 🏃‍♀️", "Aaho! Badi teji? 😏",
             "Maan v jao hun 🌹", "System hang ho jana! ⚠️", "Rab da vasta! 🙏", "Deep di gal ni manni? ☹️",
             "Finger thak jani aa! ☝️", "Zid na kro! ✨", "Maadi gal aa! ❌", "Bas hun last warning! 🔥",
@@ -122,12 +124,64 @@
 
         const noBtn = document.getElementById('no-btn');
         const msgDisplay = document.getElementById('dodge-msg');
-        let count = 0;
 
         function move(e) {
             if(e) e.preventDefault();
-            // Randomly select message
-            msgDisplay.innerHTML = punjabiMessages[Math.floor(Math.random() * punjabiMessages.length)];
+            msgDisplay.innerHTML = responses[Math.floor(Math.random() * responses.length)];
             
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 60) + 30
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 60) + 30;
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 60) + 30;
             
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
+        }
+
+        noBtn.addEventListener('touchstart', move);
+        noBtn.addEventListener('mouseover', move);
+
+        function init() { document.getElementById('start-screen').style.display = 'none'; }
+
+        // Bouncing/Floating Promises Logic
+        const promises = [
+            "I will always respect you. 💯",
+            "I will never ignore you. ❤️",
+            "My Love for you increases day by day. 📈"
+        ];
+
+        function celebrate() {
+            document.getElementById('success-screen').style.display = 'block';
+            const screen = document.getElementById('success-screen');
+
+            promises.forEach((text) => {
+                const p = document.createElement('div');
+                p.className = 'floating-promise';
+                p.innerHTML = text;
+                screen.appendChild(p);
+
+                let posX = Math.random() * (window.innerWidth - 200);
+                let posY = Math.random() * (window.innerHeight - 100);
+                let velX = (Math.random() - 0.5) * 3;
+                let velY = (Math.random() - 0.5) * 3;
+
+                function animate() {
+                    posX += velX;
+                    posY += velY;
+
+                    if (posX <= 0 || posX >= window.innerWidth - p.offsetWidth) velX *= -1;
+                    if (posY <= 0 || posY >= window.innerHeight - p.offsetHeight) velY *= -1;
+
+                    p.style.left = posX + 'px';
+                    p.style.top = posY + 'px';
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            });
+
+            setTimeout(() => { 
+                document.getElementById('final').style.opacity = '1'; 
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
