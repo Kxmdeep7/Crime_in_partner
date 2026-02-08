@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TERMINAL: MISSION YOU</title>
     <style>
+        /* [Design: Deep Purple Glow & Rounded Glass] */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
         body, html { 
             height: 100%; width: 100%; overflow: hidden; 
             background: radial-gradient(circle at center, #1a0b2e 0%, #05070a 100%); 
             display: flex; justify-content: center; align-items: center;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
-        canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.2; }
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
         /* Start Screen */
         #start-screen {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
             justify-content: center; align-items: center; cursor: pointer;
         }
 
@@ -27,8 +27,7 @@
             padding: 20px 45px; border: 2px solid #00ff41;
             color: #00ff41; font-size: 18px; font-weight: bold;
             letter-spacing: 5px; background: rgba(0, 255, 65, 0.05);
-            border-radius: 50px; box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
-            text-transform: uppercase;
+            border-radius: 50px; box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
         }
 
         /* Mission Panel */
@@ -39,34 +38,33 @@
             width: 100%; max-width: 400px; text-align: center; border-radius: 30px;
         }
 
-        .typing-text { color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 30px; min-height: 60px; }
+        .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 35px; }
 
-        /* Punjabi Dodge Messages */
+        /* Punjabi Dodge Messages - Top Center */
         #dodge-feedback {
-            position: fixed; top: 12%; width: 80%; text-align: center;
-            color: #ffb7c5; font-size: 18px; font-weight: bold;
-            z-index: 150; display: none; pointer-events: none;
-            background: rgba(0,0,0,0.7); padding: 15px; border-radius: 20px;
+            position: fixed; top: 10%; width: 85%; text-align: center;
+            color: #ffb7c5; font-size: 19px; font-weight: bold;
+            z-index: 150; display: none; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 20px;
         }
 
-        /* Rounded Buttons */
+        /* Buttons */
         .btn-group { display: flex; justify-content: center; gap: 20px; }
         .action-btn { padding: 15px 35px; border: none; background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; }
-        #no-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); position: relative; transition: 0.05s linear; }
+        #no-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); position: relative; transition: 0.1s ease-out; }
 
-        /* SUCCESS SCREEN - The 3 Promises */
+        /* SUCCESS SCREEN */
         #success-screen {
             display: none; position: fixed; inset: 0; background: #000; z-index: 1000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;
         }
 
-        .promise-list { color: #fff; text-align: left; margin-bottom: 40px; opacity: 0; transition: opacity 2s ease; }
-        .promise-item { margin-bottom: 20px; font-size: 16px; line-height: 1.4; border-left: 2px solid #00ff41; padding-left: 15px; }
-        .promise-item b { color: #00ff41; display: block; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
+        .promise-list { color: #fff; text-align: left; margin-bottom: 40px; opacity: 0; transition: opacity 2s ease; width: 100%; max-width: 320px; }
+        .promise-item { margin-bottom: 20px; font-size: 16px; border-left: 2px solid #00ff41; padding-left: 15px; }
+        .promise-item b { color: #00ff41; display: block; font-size: 11px; margin-bottom: 5px; }
 
         .punjabi-heavy {
             font-size: 24px; color: #fff; line-height: 1.6; font-weight: bold;
-            opacity: 0; transition: opacity 2.5s ease 3s; /* Fades in after promises */
+            opacity: 0; transition: opacity 2.5s ease;
         }
     </style>
 </head>
@@ -77,12 +75,12 @@
 
     <div id="start-screen" onclick="initMission()">
         <div style="font-size: 50px; margin-bottom: 20px;">🕵️‍♀️</div>
-        <button class="access-btn">DECRYPT MISSION</button>
+        <button class="access-btn">INITIALIZE MISSION</button>
     </div>
 
     <div id="mission-content">
         <div class="terminal-box">
-            <div class="typing-text" id="type-target"></div>
+            <div class="typing-text">Will you be my crime partner? 🕵️‍♂️</div>
             <div class="btn-group">
                 <button class="action-btn" onclick="celebrate()">YES</button>
                 <button class="action-btn" id="no-btn" onmouseover="dodge()" onclick="dodge()">NO</button>
@@ -106,13 +104,16 @@
     <script>
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const letters = "01"; const fontSize = 16;
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+
+        const letters = "01";
+        const fontSize = 16;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
 
         function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(0, 0, 0, 0.08)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#00ff41"; ctx.font = fontSize + "px monospace";
             for (let i = 0; i < drops.length; i++) {
                 const text = letters.charAt(Math.floor(Math.random() * letters.length));
@@ -125,20 +126,32 @@
 
         let dodgeCount = 0;
         const punjabiMessages = [
-            "Haye Oye NO! 😲", "Yr eve thodi hunda... 😒", "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
-            "Yrr eda ni krdea, Ik bar yes te click kro! ❤️", "Hale v No? Hadd hogi! 😂",
-            "Finger thak jani aa, Yes dab do ☝️", "Dekhlo pher, Deep ne rusi jana 😤",
-            "Koshish krlo, No hath ni ana 🏃‍♂️", "System hang ho jana je hor No dabeya ⚠️",
-            "Tuc No dabde thak jaoge, m bhajde ni 😂", "Rab da vasta, Yes dab do hun! 🙏"
+            "Haye Oye NO! 😲",
+            "Yr eve thodi hunda... 😒",
+            "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
+            "Yrr eda ni krdea, Ik bar yes te click kro! ❤️",
+            "Hale v No? Hadd hogi! 😂",
+            "Finger thak jani aa, Yes dab do ☝️",
+            "Dekhlo pher, Deep ne rusi jana 😤",
+            "Aaho! Badi teji dikha rhey ho 😏",
+            "Koshish krlo, No hath ni ana 🏃‍♂️",
+            "Menu pta tuc Yes hi dabna 😇",
+            "Chalo hun bas kro, Maan v jao 🌹",
+            "Ena gussa? No piche hi pe gye 😂",
+            "System hang ho jana! ⚠️",
+            "Deep di gal ni manni? Maadi gal aa ☹️",
+            "Wait kr rha m, kadon Yes hunda 🕒",
+            "Ek chance hor dinda m, Yes dab do 💁‍♂️",
+            "Tuc No dabde thak jaoge, m bhajde ni 😂",
+            "Rab da vasta, Yes dab do hun! 🙏",
+            "Zid na kro, Case close krna aapa 🕵️‍♂️",
+            "Acha ji? Eni mehnat No lyi? 😂",
+            "Bas hun last warning, Yes dab do! 🔥"
         ];
 
         function initMission() {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('mission-content').style.display = 'flex';
-            const text = "Will you be my crime partner? 🕵️‍♀️🕴️";
-            let i = 0; const target = document.getElementById('type-target');
-            function type() { if (i < text.length) { target.innerHTML += text.charAt(i); i++; setTimeout(type, 60); } }
-            type();
         }
 
         function dodge() {
@@ -149,15 +162,19 @@
             
             dodgeCount++;
             const btn = document.getElementById('no-btn');
-            const padding = 30;
-            const safeX = Math.max(padding, Math.random() * (window.innerWidth - btn.offsetWidth - padding));
-            const safeY = Math.max(padding, Math.random() * (window.innerHeight - btn.offsetHeight - padding));
-            btn.style.position = 'fixed'; btn.style.left = safeX + 'px'; btn.style.top = safeY + 'px';
+            const padding = 50; 
+            const safeX = Math.max(padding, Math.random() * (window.innerWidth - btn.offsetWidth - (padding * 2)) + padding);
+            const safeY = Math.max(padding, Math.random() * (window.innerHeight - btn.offsetHeight - (padding * 2)) + padding);
+            
+            btn.style.position = 'fixed';
+            btn.style.left = safeX + 'px';
+            btn.style.top = safeY + 'px';
         }
 
         function celebrate() {
             document.getElementById('mission-content').style.display = 'none';
             document.getElementById('matrix').style.display = 'none';
+            document.getElementById('dodge-feedback').style.display = 'none';
             document.getElementById('success-screen').style.display = 'flex';
             
             // Sequential Reveal
