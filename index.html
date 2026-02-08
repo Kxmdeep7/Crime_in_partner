@@ -16,7 +16,7 @@
         canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
         #start-screen {
-            position: fixed; inset: 0; z-index: 100;
+            position: fixed; inset: 0; z-index: 500;
             background: #000; display: flex; flex-direction: column;
             justify-content: center; align-items: center; cursor: pointer;
         }
@@ -43,27 +43,30 @@
             z-index: 150; display: none; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 20px;
         }
 
-        .btn-group { display: flex; justify-content: center; gap: 20px; }
-        .action-btn { padding: 15px 35px; border: none; background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; }
-        #no-btn { 
-            background: rgba(255,255,255,0.1); color: #fff; 
-            border: 1px solid rgba(255,255,255,0.3); 
-            position: relative; 
-            z-index: 200; /* Ensure it stays above everything */
+        .random-promise {
+            position: fixed; background: rgba(0, 255, 65, 0.1);
+            border: 1px solid #00ff41; color: #fff;
+            padding: 15px 20px; border-radius: 15px;
+            font-size: 14px; z-index: 1000; opacity: 0;
+            transition: opacity 0.5s ease; pointer-events: none;
+            max-width: 220px; backdrop-filter: blur(5px);
         }
 
         #success-screen {
-            display: none; position: fixed; inset: 0; background: #000; z-index: 1000;
+            display: none; position: fixed; inset: 0; background: #000; z-index: 2000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;
         }
 
-        .promise-list { color: #fff; text-align: left; margin-bottom: 40px; opacity: 0; transition: opacity 2s ease; width: 100%; max-width: 320px; }
-        .promise-item { margin-bottom: 20px; font-size: 16px; border-left: 2px solid #00ff41; padding-left: 15px; }
-        .promise-item b { color: #00ff41; display: block; font-size: 11px; margin-bottom: 5px; }
-
         .punjabi-heavy {
-            font-size: 24px; color: #fff; line-height: 1.6; font-weight: bold;
-            opacity: 0; transition: opacity 2.5s ease;
+            font-size: 26px; color: #fff; line-height: 1.6; font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+        }
+
+        .action-btn { padding: 15px 35px; border: none; background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; }
+        #no-btn { 
+            background: rgba(255,255,255,0.1); color: #fff; 
+            border: 1px solid rgba(255,255,255,0.3); position: relative; 
+            z-index: 50; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
     </style>
 </head>
@@ -80,36 +83,33 @@
     <div id="mission-content">
         <div class="terminal-box">
             <div class="typing-text">Will you be my crime partner? 🕵️‍♂️</div>
-            <div class="btn-group">
+            <div id="btn-container" style="display: flex; justify-content: center; gap: 20px; position: relative; height: 60px; width: 100%;">
                 <button class="action-btn" onclick="celebrate()">YES</button>
                 <button class="action-btn" id="no-btn">NO</button>
             </div>
         </div>
     </div>
 
+    <div id="promise-container"></div>
+
     <div id="success-screen">
-        <div class="promise-list" id="promises">
-            <div class="promise-item"><b>Firstly</b> I will always respect you. 💯</div>
-            <div class="promise-item"><b>Secondly</b> I will never ignore you. ❤️</div>
-            <div class="promise-item"><b>Thirdly</b> My Love for you increases day by day. 📈</div>
-        </div>
-        <div class="punjabi-heavy" id="punjabi-final">
+        <div class="punjabi-heavy">
             Apna khayal rakhna tuc,<br>
             koi jee rhea thnu dekh dekh ke!!
         </div>
+        <div style="color: #00ff41; margin-top: 30px; letter-spacing: 5px; font-size: 12px; border: 1px solid #00ff41; padding: 10px 20px; border-radius: 50px;">CASE CLOSED ❤️</div>
     </div>
 
     <script>
+        // Matrix Logic
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.onresize = resize; resize();
-
         const letters = "01";
         const fontSize = 16;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
-
         function drawMatrix() {
             ctx.fillStyle = "rgba(0, 0, 0, 0.08)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#00ff41"; ctx.font = fontSize + "px monospace";
@@ -122,62 +122,81 @@
         }
         setInterval(drawMatrix, 35);
 
+        // Dodge and Reset Logic
         let dodgeCount = 0;
+        let resetTimer;
+        const noBtn = document.getElementById('no-btn');
         const punjabiMessages = [
             "Haye Oye NO! 😲", "Yr eve thodi hunda... 😒", "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
             "Yrr eda ni krdea, Ik bar yes te click kro! ❤️", "Hale v No? 😂", "Finger thak jani aa☝️",
             "Deep ne rusi jana pher 😤", "No hath ni ana 🏃‍♂️", "System hang ho jana! ⚠️", "Maan v jao hun 🌹"
         ];
 
-        const noBtn = document.getElementById('no-btn');
-
         function dodge(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
+            clearTimeout(resetTimer); // Stop it from resetting while she is active
+            
             const feedback = document.getElementById('dodge-feedback');
             feedback.innerHTML = punjabiMessages[dodgeCount % punjabiMessages.length];
             feedback.style.display = 'block';
             setTimeout(() => { feedback.style.display = 'none'; }, 1500);
             
             dodgeCount++;
-            
-            // MATH FIX: Keeps it away from the center box
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
             const padding = 60;
-            
-            let randomX, randomY;
-            
-            // Logic to ensure it jumps to the outer areas of the screen
-            do {
-                randomX = Math.floor(Math.random() * (winW - noBtn.offsetWidth - padding)) + (padding / 2);
-                randomY = Math.floor(Math.random() * (winH - noBtn.offsetHeight - padding)) + (padding / 2);
-            } while ( // Repeat if the location is behind the terminal box (center area)
-                randomX > winW * 0.2 && randomX < winW * 0.8 &&
-                randomY > winH * 0.3 && randomY < winH * 0.7
-            );
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+            const randomX = Math.floor(Math.random() * maxX) + (padding / 2);
+            const randomY = Math.floor(Math.random() * maxY) + (padding / 2);
             
             noBtn.style.position = 'fixed';
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
+
+            // Start the 5-second timer to return the button
+            resetTimer = setTimeout(resetButton, 5000);
         }
 
-        noBtn.addEventListener('mouseover', dodge);
+        function resetButton() {
+            noBtn.style.position = 'relative';
+            noBtn.style.left = '0';
+            noBtn.style.top = '0';
+        }
+
         noBtn.addEventListener('touchstart', dodge);
+        noBtn.addEventListener('mouseover', dodge);
 
         function initMission() {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('mission-content').style.display = 'flex';
         }
 
+        const promises = [
+            "I will always respect you. 💯",
+            "I will never ignore you. ❤️",
+            "My Love for you increases day by day. 📈"
+        ];
+
         function celebrate() {
             document.getElementById('mission-content').style.display = 'none';
-            document.getElementById('matrix').style.display = 'none';
             document.getElementById('dodge-feedback').style.display = 'none';
-            document.getElementById('success-screen').style.display = 'flex';
-            
-            setTimeout(() => { document.getElementById('promises').style.opacity = '1'; }, 500);
-            setTimeout(() => { document.getElementById('punjabi-final').style.opacity = '1'; }, 4000);
-            
+            promises.forEach((text, index) => {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    p.className = 'random-promise';
+                    p.innerHTML = text;
+                    const x = Math.max(20, Math.random() * (window.innerWidth - 220));
+                    const y = Math.max(20, Math.random() * (window.innerHeight - 100));
+                    p.style.left = x + 'px';
+                    p.style.top = y + 'px';
+                    document.getElementById('promise-container').appendChild(p);
+                    setTimeout(() => p.style.opacity = '1', 50);
+                }, index * 1000);
+            });
+            setTimeout(() => {
+                document.getElementById('promise-container').style.display = 'none';
+                document.getElementById('matrix').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'flex';
+            }, 4500);
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
     </script>
