@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TERMINAL: MISSION YOU</title>
     <style>
-        /* [Design: Deep Purple Glow & Rounded Glass] */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             height: 100%; width: 100%; overflow: hidden; 
@@ -16,10 +15,9 @@
 
         canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.15; pointer-events: none; }
 
-        /* Start Screen */
         #start-screen {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            background: #000; display: flex; flex-direction: column;
             justify-content: center; align-items: center; cursor: pointer;
         }
 
@@ -30,29 +28,30 @@
             border-radius: 50px; box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
         }
 
-        /* Mission Panel */
         #mission-content { display: none; position: relative; z-index: 10; flex-direction: column; align-items: center; width: 90%; }
         .terminal-box {
             background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 255, 65, 0.2); padding: 40px 25px;
+            border: 1px solid rgba(0, 255, 65, 0.2); padding: 45px 25px;
             width: 100%; max-width: 400px; text-align: center; border-radius: 30px;
         }
 
         .typing-text { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 35px; }
 
-        /* Punjabi Dodge Messages - Top Center */
         #dodge-feedback {
             position: fixed; top: 10%; width: 85%; text-align: center;
             color: #ffb7c5; font-size: 19px; font-weight: bold;
             z-index: 150; display: none; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 20px;
         }
 
-        /* Buttons */
         .btn-group { display: flex; justify-content: center; gap: 20px; }
         .action-btn { padding: 15px 35px; border: none; background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border-radius: 50px; }
-        #no-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); position: relative; transition: 0.1s ease-out; }
+        #no-btn { 
+            background: rgba(255,255,255,0.1); color: #fff; 
+            border: 1px solid rgba(255,255,255,0.3); 
+            position: relative; 
+            z-index: 200; /* Ensure it stays above everything */
+        }
 
-        /* SUCCESS SCREEN */
         #success-screen {
             display: none; position: fixed; inset: 0; background: #000; z-index: 1000;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;
@@ -83,7 +82,7 @@
             <div class="typing-text">Will you be my crime partner? 🕵️‍♂️</div>
             <div class="btn-group">
                 <button class="action-btn" onclick="celebrate()">YES</button>
-                <button class="action-btn" id="no-btn" onmouseover="dodge()" onclick="dodge()">NO</button>
+                <button class="action-btn" id="no-btn">NO</button>
             </div>
         </div>
     </div>
@@ -94,7 +93,6 @@
             <div class="promise-item"><b>Secondly</b> I will never ignore you. ❤️</div>
             <div class="promise-item"><b>Thirdly</b> My Love for you increases day by day. 📈</div>
         </div>
-        
         <div class="punjabi-heavy" id="punjabi-final">
             Apna khayal rakhna tuc,<br>
             koi jee rhea thnu dekh dekh ke!!
@@ -126,49 +124,49 @@
 
         let dodgeCount = 0;
         const punjabiMessages = [
-            "Haye Oye NO! 😲",
-            "Yr eve thodi hunda... 😒",
-            "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
-            "Yrr eda ni krdea, Ik bar yes te click kro! ❤️",
-            "Hale v No? Hadd hogi! 😂",
-            "Finger thak jani aa, Yes dab do ☝️",
-            "Dekhlo pher, Deep ne rusi jana 😤",
-            "Aaho! Badi teji dikha rhey ho 😏",
-            "Koshish krlo, No hath ni ana 🏃‍♂️",
-            "Menu pta tuc Yes hi dabna 😇",
-            "Chalo hun bas kro, Maan v jao 🌹",
-            "Ena gussa? No piche hi pe gye 😂",
-            "System hang ho jana! ⚠️",
-            "Deep di gal ni manni? Maadi gal aa ☹️",
-            "Wait kr rha m, kadon Yes hunda 🕒",
-            "Ek chance hor dinda m, Yes dab do 💁‍♂️",
-            "Tuc No dabde thak jaoge, m bhajde ni 😂",
-            "Rab da vasta, Yes dab do hun! 🙏",
-            "Zid na kro, Case close krna aapa 🕵️‍♂️",
-            "Acha ji? Eni mehnat No lyi? 😂",
-            "Bas hun last warning, Yes dab do! 🔥"
+            "Haye Oye NO! 😲", "Yr eve thodi hunda... 😒", "Nai Nai Deep, thoda ta Khyaal krlo! 🥺",
+            "Yrr eda ni krdea, Ik bar yes te click kro! ❤️", "Hale v No? 😂", "Finger thak jani aa☝️",
+            "Deep ne rusi jana pher 😤", "No hath ni ana 🏃‍♂️", "System hang ho jana! ⚠️", "Maan v jao hun 🌹"
         ];
+
+        const noBtn = document.getElementById('no-btn');
+
+        function dodge(e) {
+            e.preventDefault();
+            const feedback = document.getElementById('dodge-feedback');
+            feedback.innerHTML = punjabiMessages[dodgeCount % punjabiMessages.length];
+            feedback.style.display = 'block';
+            setTimeout(() => { feedback.style.display = 'none'; }, 1500);
+            
+            dodgeCount++;
+            
+            // MATH FIX: Keeps it away from the center box
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            const padding = 60;
+            
+            let randomX, randomY;
+            
+            // Logic to ensure it jumps to the outer areas of the screen
+            do {
+                randomX = Math.floor(Math.random() * (winW - noBtn.offsetWidth - padding)) + (padding / 2);
+                randomY = Math.floor(Math.random() * (winH - noBtn.offsetHeight - padding)) + (padding / 2);
+            } while ( // Repeat if the location is behind the terminal box (center area)
+                randomX > winW * 0.2 && randomX < winW * 0.8 &&
+                randomY > winH * 0.3 && randomY < winH * 0.7
+            );
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        noBtn.addEventListener('mouseover', dodge);
+        noBtn.addEventListener('touchstart', dodge);
 
         function initMission() {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('mission-content').style.display = 'flex';
-        }
-
-        function dodge() {
-            const feedback = document.getElementById('dodge-feedback');
-            feedback.innerHTML = punjabiMessages[dodgeCount % punjabiMessages.length];
-            feedback.style.display = 'block';
-            setTimeout(() => { feedback.style.display = 'none'; }, 2000);
-            
-            dodgeCount++;
-            const btn = document.getElementById('no-btn');
-            const padding = 50; 
-            const safeX = Math.max(padding, Math.random() * (window.innerWidth - btn.offsetWidth - (padding * 2)) + padding);
-            const safeY = Math.max(padding, Math.random() * (window.innerHeight - btn.offsetHeight - (padding * 2)) + padding);
-            
-            btn.style.position = 'fixed';
-            btn.style.left = safeX + 'px';
-            btn.style.top = safeY + 'px';
         }
 
         function celebrate() {
@@ -177,7 +175,6 @@
             document.getElementById('dodge-feedback').style.display = 'none';
             document.getElementById('success-screen').style.display = 'flex';
             
-            // Sequential Reveal
             setTimeout(() => { document.getElementById('promises').style.opacity = '1'; }, 500);
             setTimeout(() => { document.getElementById('punjabi-final').style.opacity = '1'; }, 4000);
             
